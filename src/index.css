@@ -10,6 +10,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+.limit-width {
+  max-width: 80em;
+  margin: auto;
+}
+
 .title {
   margin: 1.2em auto;
   padding: 1em 0.1em;

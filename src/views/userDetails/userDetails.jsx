@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Input, Select, Button, notification } from 'antd';
 const axios = require('axios');
 
 function UserDetails() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [form] = Form.useForm();
+
   const layout = {
     labelCol: {
       span: 8,
@@ -19,15 +22,15 @@ function UserDetails() {
   const prefixSelector = (
     <Form.Item name='prefix' noStyle>
       <Select style={{ width: 70 }}>
-        <Select.Option value='91'>+91</Select.Option>
-        <Select.Option value='1'>+1</Select.Option>
+        <Select.Option value='+91'>+91</Select.Option>
+        <Select.Option value='+1'>+1</Select.Option>
       </Select>
     </Form.Item>
   );
 
   const onFinish = (values) => {
     values.phone = values.prefix + values.phone;
-
+    setIsLoading(true);
     axios({
       method: 'post',
       url: 'http://localhost:8000/person/',
@@ -37,15 +40,21 @@ function UserDetails() {
       },
     })
       .then(function (response) {
-        console.log(response);
         notification.success({
           message: response.data.message,
         });
+        form.resetFields();
       })
       .catch(function (error) {
+        if (error.response.status == 500) {
+          localStorage.removeItem('token');
+        }
         notification.error({
-          message: error.data.message,
+          message: error.response.data.message,
         });
+      })
+      .then(function () {
+        setIsLoading(false);
       });
   };
 
@@ -54,7 +63,7 @@ function UserDetails() {
       <div>
         <h1 className='text-center title'>Why so serious? Just give us your details. We're from your bank.</h1>
       </div>
-      <Form {...layout} name='nest-messages' onFinish={onFinish} validateMessages={validateMessages}>
+      <Form {...layout} form={form} name='nest-messages' onFinish={onFinish} validateMessages={validateMessages}>
         <Form.Item
           name='first_name'
           label='First Name'
@@ -112,7 +121,7 @@ function UserDetails() {
           <Input />
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-          <Button type='primary' htmlType='submit'>
+          <Button type='primary' htmlType='submit' loading={isLoading}>
             Submit
           </Button>
         </Form.Item>
